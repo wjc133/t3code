@@ -70,6 +70,7 @@ export interface WsRpcClient {
   };
   readonly filesystem: {
     readonly browse: RpcUnaryMethod<typeof WS_METHODS.filesystemBrowse>;
+    readonly read: RpcUnaryMethod<typeof WS_METHODS.filesystemRead>;
   };
   readonly shell: {
     readonly openInEditor: (input: {
@@ -150,6 +151,7 @@ export function createWsRpcClient(transport: WsTransport): WsRpcClient {
     },
     filesystem: {
       browse: (input) => transport.request((client) => client[WS_METHODS.filesystemBrowse](input)),
+      read: (input) => transport.request((client) => client[WS_METHODS.filesystemRead](input)),
     },
     shell: {
       openInEditor: (input) =>

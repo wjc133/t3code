@@ -18,7 +18,12 @@ import type {
   GitStatusResult,
   GitCreateBranchResult,
 } from "./git";
-import type { FilesystemBrowseInput, FilesystemBrowseResult } from "./filesystem";
+import type {
+  FilesystemBrowseInput,
+  FilesystemBrowseResult,
+  FileReadInput,
+  FileReadResult,
+} from "./filesystem";
 import type {
   ProjectSearchEntriesInput,
   ProjectSearchEntriesResult,
@@ -246,6 +251,7 @@ export interface EnvironmentApi {
   };
   filesystem: {
     browse: (input: FilesystemBrowseInput) => Promise<FilesystemBrowseResult>;
+    read: (input: FileReadInput) => Promise<FileReadResult>;
   };
   git: {
     listBranches: (input: GitListBranchesInput) => Promise<GitListBranchesResult>;

@@ -187,6 +187,7 @@ function createBaseServerConfig(): ServerConfig {
 
 function createMockEnvironmentApi(input: {
   browse: EnvironmentApi["filesystem"]["browse"];
+  read: EnvironmentApi["filesystem"]["read"];
   dispatchCommand: EnvironmentApi["orchestration"]["dispatchCommand"];
 }): EnvironmentApi {
   return {
@@ -194,6 +195,7 @@ function createMockEnvironmentApi(input: {
     projects: {} as EnvironmentApi["projects"],
     filesystem: {
       browse: input.browse,
+      read: input.read,
     },
     git: {} as EnvironmentApi["git"],
     orchestration: {
@@ -4569,11 +4571,17 @@ describe("ChatView timeline estimator parity (full app)", () => {
     const remoteDispatchMock = vi.fn(async () => ({
       sequence: fixture.snapshot.snapshotSequence + 1,
     }));
+    const remoteReadMock = vi.fn(async () => ({
+      content: "",
+      mimeType: "text/plain",
+      size: 0,
+    }));
 
     __setEnvironmentApiOverrideForTests(
       REMOTE_ENVIRONMENT_ID,
       createMockEnvironmentApi({
         browse: remoteBrowseMock,
+        read: remoteReadMock,
         dispatchCommand: remoteDispatchMock,
       }),
     );
