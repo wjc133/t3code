@@ -4,7 +4,14 @@ import * as RpcGroup from "effect/unstable/rpc/RpcGroup";
 
 import { OpenError, OpenInEditorInput } from "./editor";
 import { AuthAccessStreamEvent } from "./auth";
-import { FilesystemBrowseInput, FilesystemBrowseResult, FilesystemBrowseError } from "./filesystem";
+import {
+  FilesystemBrowseInput,
+  FilesystemBrowseResult,
+  FilesystemBrowseError,
+  FileReadInput,
+  FileReadResult,
+  FileReadError,
+} from "./filesystem";
 import {
   GitActionProgressEvent,
   GitCheckoutInput,
@@ -86,6 +93,7 @@ export const WS_METHODS = {
 
   // Filesystem methods
   filesystemBrowse: "filesystem.browse",
+  filesystemRead: "filesystem.read",
 
   // Git methods
   gitPull: "git.pull",
@@ -173,6 +181,12 @@ export const WsFilesystemBrowseRpc = Rpc.make(WS_METHODS.filesystemBrowse, {
   payload: FilesystemBrowseInput,
   success: FilesystemBrowseResult,
   error: FilesystemBrowseError,
+});
+
+export const WsFilesystemReadRpc = Rpc.make(WS_METHODS.filesystemRead, {
+  payload: FileReadInput,
+  success: FileReadResult,
+  error: FileReadError,
 });
 
 export const WsSubscribeGitStatusRpc = Rpc.make(WS_METHODS.subscribeGitStatus, {
@@ -361,6 +375,7 @@ export const WsRpcGroup = RpcGroup.make(
   WsProjectsWriteFileRpc,
   WsShellOpenInEditorRpc,
   WsFilesystemBrowseRpc,
+  WsFilesystemReadRpc,
   WsSubscribeGitStatusRpc,
   WsGitPullRpc,
   WsGitRefreshStatusRpc,

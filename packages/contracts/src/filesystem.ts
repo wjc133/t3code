@@ -1,5 +1,5 @@
 import { Schema } from "effect";
-import { TrimmedNonEmptyString } from "./baseSchemas";
+import { NonNegativeInt, TrimmedNonEmptyString } from "./baseSchemas";
 
 const FILESYSTEM_PATH_MAX_LENGTH = 512;
 
@@ -23,6 +23,27 @@ export type FilesystemBrowseResult = typeof FilesystemBrowseResult.Type;
 
 export class FilesystemBrowseError extends Schema.TaggedErrorClass<FilesystemBrowseError>()(
   "FilesystemBrowseError",
+  {
+    message: TrimmedNonEmptyString,
+    cause: Schema.optional(Schema.Defect),
+  },
+) {}
+
+export const FileReadInput = Schema.Struct({
+  path: TrimmedNonEmptyString.check(Schema.isMaxLength(FILESYSTEM_PATH_MAX_LENGTH)),
+  cwd: Schema.optional(TrimmedNonEmptyString.check(Schema.isMaxLength(FILESYSTEM_PATH_MAX_LENGTH))),
+});
+export type FileReadInput = typeof FileReadInput.Type;
+
+export const FileReadResult = Schema.Struct({
+  content: Schema.String,
+  mimeType: Schema.String,
+  size: NonNegativeInt,
+});
+export type FileReadResult = typeof FileReadResult.Type;
+
+export class FileReadError extends Schema.TaggedErrorClass<FileReadError>()(
+  "FileReadError",
   {
     message: TrimmedNonEmptyString,
     cause: Schema.optional(Schema.Defect),
