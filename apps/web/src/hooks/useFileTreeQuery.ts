@@ -33,11 +33,18 @@ export function useFileTreeQuery(options: FileTreeQueryOptions) {
         partialPath: cwd,
       });
 
-      return result.entries.map((entry) => ({
+      const nodes = result.entries.map((entry) => ({
         name: entry.name,
         path: entry.fullPath,
         kind: entry.kind,
       }));
+
+      return nodes.sort((a, b) => {
+        if (a.kind !== b.kind) {
+          return a.kind === "directory" ? -1 : 1;
+        }
+        return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      });
     },
     enabled: enabled && !!environmentId && !!cwd,
     staleTime: 15_000,
