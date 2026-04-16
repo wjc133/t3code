@@ -12,6 +12,7 @@ export type FilesystemBrowseInput = typeof FilesystemBrowseInput.Type;
 export const FilesystemBrowseEntry = Schema.Struct({
   name: TrimmedNonEmptyString,
   fullPath: TrimmedNonEmptyString,
+  kind: Schema.Literals(["file", "directory"]),
 });
 export type FilesystemBrowseEntry = typeof FilesystemBrowseEntry.Type;
 

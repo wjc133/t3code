@@ -4559,13 +4559,13 @@ describe("ChatView timeline estimator parity (full app)", () => {
       if (partialPath === "~/workspaces/") {
         return {
           parentPath: "~/workspaces/",
-          entries: [{ name: "codething", fullPath: "~/workspaces/codething" }],
+          entries: [{ name: "codething", fullPath: "~/workspaces/codething", kind: "directory" as const }],
         };
       }
 
       return {
         parentPath: "~/",
-        entries: [{ name: "workspaces", fullPath: "~/workspaces" }],
+        entries: [{ name: "workspaces", fullPath: "~/workspaces", kind: "directory" as const }],
       };
     });
     const remoteDispatchMock = vi.fn(async () => ({

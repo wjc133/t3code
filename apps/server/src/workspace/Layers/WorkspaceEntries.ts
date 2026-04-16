@@ -482,13 +482,14 @@ export const makeWorkspaceEntries = Effect.gen(function* () {
         entries: dirents
           .filter(
             (dirent) =>
-              dirent.isDirectory() &&
+              (dirent.isDirectory() || dirent.isFile()) &&
               dirent.name.toLowerCase().startsWith(lowerPrefix) &&
               (showHidden || !dirent.name.startsWith(".")),
           )
           .map((dirent) => ({
             name: dirent.name,
             fullPath: path.join(parentPath, dirent.name),
+            kind: dirent.isDirectory() ? ("directory" as const) : ("file" as const),
           }))
           .toSorted((left, right) => left.name.localeCompare(right.name)),
       };

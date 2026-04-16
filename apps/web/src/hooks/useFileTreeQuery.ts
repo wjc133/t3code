@@ -36,7 +36,7 @@ export function useFileTreeQuery(options: FileTreeQueryOptions) {
       return result.entries.map((entry) => ({
         name: entry.name,
         path: entry.fullPath,
-        kind: entry.fullPath.endsWith("/") ? "directory" : "file",
+        kind: entry.kind,
       }));
     },
     enabled: enabled && !!environmentId && !!cwd,
@@ -72,7 +72,7 @@ export function useDirectoryContentQuery(options: {
       const nodes = result.entries.map((entry) => ({
         name: entry.name,
         path: entry.fullPath,
-        kind: (entry.fullPath.endsWith("/") ? "directory" : "file") as FileTreeNode["kind"],
+        kind: entry.kind,
       }));
 
       return nodes.sort((a, b) => {
