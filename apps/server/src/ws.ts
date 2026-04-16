@@ -18,6 +18,7 @@ import {
   ProjectWriteFileError,
   OrchestrationReplayEventsError,
   FilesystemBrowseError,
+  FileReadError,
   ThreadId,
   type TerminalEvent,
   WS_METHODS,
@@ -776,6 +777,20 @@ const makeWsRpcLayer = (currentSessionId: AuthSessionId) =>
               Effect.mapError(
                 (cause) =>
                   new FilesystemBrowseError({
+                    message: cause.detail,
+                    cause,
+                  }),
+              ),
+            ),
+            { "rpc.aggregate": "workspace" },
+          ),
+        [WS_METHODS.filesystemRead]: (input) =>
+          observeRpcEffect(
+            WS_METHODS.filesystemRead,
+            workspaceEntries.read(input).pipe(
+              Effect.mapError(
+                (cause) =>
+                  new FileReadError({
                     message: cause.detail,
                     cause,
                   }),

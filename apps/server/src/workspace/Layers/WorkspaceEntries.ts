@@ -4,7 +4,7 @@ import type { Dirent } from "node:fs";
 
 import { Cache, Duration, Effect, Exit, Layer, Option, Path } from "effect";
 
-import { type FilesystemBrowseInput, type ProjectEntry } from "@t3tools/contracts";
+import { type FileReadInput, type FileReadResult, type FilesystemBrowseInput, type ProjectEntry } from "@t3tools/contracts";
 import { isExplicitRelativePath, isWindowsAbsolutePath } from "@t3tools/shared/path";
 import {
   insertRankedSearchResult,
@@ -171,6 +171,39 @@ const resolveBrowseTarget = (
 
     return pathService.resolve(expandHomePath(input.cwd, pathService), input.partialPath);
   });
+
+function getMimeType(ext: string): string {
+  const mimeTypes: Record<string, string> = {
+    ".ts": "text/typescript",
+    ".tsx": "text/typescript-jsx",
+    ".js": "text/javascript",
+    ".jsx": "text/javascript-jsx",
+    ".json": "application/json",
+    ".md": "text/markdown",
+    ".css": "text/css",
+    ".html": "text/html",
+    ".py": "text/x-python",
+    ".go": "text/x-go",
+    ".rs": "text/x-rust",
+    ".java": "text/x-java",
+    ".c": "text/x-c",
+    ".cpp": "text/x-cpp",
+    ".h": "text/x-c",
+    ".hpp": "text/x-cpp",
+    ".yaml": "text/yaml",
+    ".yml": "text/yaml",
+    ".toml": "text/x-toml",
+    ".xml": "text/xml",
+    ".sh": "text/x-shellscript",
+    ".bash": "text/x-shellscript",
+    ".zsh": "text/x-shellscript",
+    ".sql": "text/x-sql",
+    ".graphql": "text/x-graphql",
+    ".vue": "text/x-vue",
+    ".svelte": "text/x-svelte",
+  };
+  return mimeTypes[ext] || "text/plain";
+}
 
 export const makeWorkspaceEntries = Effect.gen(function* () {
   const path = yield* Path.Path;
@@ -462,6 +495,93 @@ export const makeWorkspaceEntries = Effect.gen(function* () {
     },
   );
 
+  const read: WorkspaceEntriesShape["read"] = Effect.fn("WorkspaceEntries.read")(
+    function* (input: FileReadInput) {
+      if (!input.cwd) {
+        return yield* new WorkspaceEntriesBrowseError({
+          cwd: input.cwd,
+          partialPath: input.path,
+          operation: "workspaceEntries.read",
+          detail: "Reading files requires a current project (cwd).",
+        });
+      }
+
+      const normalizedCwd = yield* normalizeWorkspaceRoot(input.cwd).pipe(
+        Effect.catch(() => Effect.succeed(input.cwd!)),
+      );
+
+      const resolved = yield* workspacePaths.resolveRelativePathWithinRoot({
+        workspaceRoot: normalizedCwd,
+        relativePath: input.path,
+      }).pipe(
+        Effect.mapError(
+          (cause) =>
+            new WorkspaceEntriesBrowseError({
+              cwd: input.cwd,
+              partialPath: input.path,
+              operation: "workspaceEntries.read.resolvePath",
+              detail: cause.message,
+              cause,
+            }),
+        ),
+      );
+
+      const absolutePath = resolved.absolutePath;
+
+      const stats = yield* Effect.tryPromise({
+        try: () => fsPromises.stat(absolutePath),
+        catch: (cause) =>
+          new WorkspaceEntriesBrowseError({
+            cwd: input.cwd,
+            partialPath: input.path,
+            operation: "workspaceEntries.read.stat",
+            detail: `Cannot read file: ${input.path}`,
+            cause,
+          }),
+      });
+
+      if (!stats.isFile()) {
+        return yield* new WorkspaceEntriesBrowseError({
+          cwd: input.cwd,
+          partialPath: input.path,
+          operation: "read",
+          detail: "Path is not a regular file",
+        });
+      }
+
+      if (stats.size > 10 * 1024 * 1024) {
+        return yield* new WorkspaceEntriesBrowseError({
+          cwd: input.cwd,
+          partialPath: input.path,
+          operation: "workspaceEntries.read.sizeCheck",
+          detail: "File too large to read (max 10MB)",
+          cause: undefined,
+        });
+      }
+
+      const content = yield* Effect.tryPromise({
+        try: () => fsPromises.readFile(absolutePath, "utf-8"),
+        catch: (cause) =>
+          new WorkspaceEntriesBrowseError({
+            cwd: input.cwd,
+            partialPath: input.path,
+            operation: "workspaceEntries.read.readFile",
+            detail: `Cannot read file: ${input.path}`,
+            cause,
+          }),
+      });
+
+      const ext = path.extname(absolutePath).toLowerCase();
+      const mimeType = getMimeType(ext);
+
+      return {
+        content,
+        mimeType,
+        size: stats.size,
+      } satisfies FileReadResult;
+    },
+  );
+
   const search: WorkspaceEntriesShape["search"] = Effect.fn("WorkspaceEntries.search")(
     function* (input) {
       const normalizedCwd = yield* normalizeWorkspaceRoot(input.cwd);
@@ -499,6 +619,7 @@ export const makeWorkspaceEntries = Effect.gen(function* () {
 
   return {
     browse,
+    read,
     invalidate,
     search,
   } satisfies WorkspaceEntriesShape;

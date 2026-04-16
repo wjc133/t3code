@@ -10,6 +10,8 @@ import { Schema, Context } from "effect";
 import type { Effect } from "effect";
 
 import type {
+  FileReadInput,
+  FileReadResult,
   FilesystemBrowseInput,
   FilesystemBrowseResult,
   ProjectSearchEntriesInput,
@@ -48,6 +50,13 @@ export interface WorkspaceEntriesShape {
   readonly browse: (
     input: FilesystemBrowseInput,
   ) => Effect.Effect<FilesystemBrowseResult, WorkspaceEntriesBrowseError>;
+
+  /**
+   * Read the contents of a file within the workspace.
+   */
+  readonly read: (
+    input: FileReadInput,
+  ) => Effect.Effect<FileReadResult, WorkspaceEntriesBrowseError>;
 
   /**
    * Search indexed workspace entries for files and directories matching the
