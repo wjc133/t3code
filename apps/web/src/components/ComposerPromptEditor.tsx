@@ -882,6 +882,7 @@ export interface ComposerPromptEditorHandle {
     expandedCursor: number;
     terminalContextIds: string[];
   };
+  insertMention: (filePath: string) => void;
 }
 
 interface ComposerPromptEditorProps {
@@ -1564,8 +1565,29 @@ function ComposerPromptEditorInner({
         );
       },
       readSnapshot,
+      insertMention: (filePath: string) => {
+        editor.update(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection)) {
+            return;
+          }
+
+          const mentionNode = $createComposerMentionNode(filePath);
+          selection.insertNodes([mentionNode]);
+
+          // Insert a space after the mention
+          const spaceNode = $createTextNode(" ");
+          mentionNode.insertAfter(spaceNode);
+
+          // Move cursor after the space
+          const newSelection = $createRangeSelection();
+          newSelection.anchor.set(spaceNode.getKey(), 1, "text");
+          newSelection.focus.set(spaceNode.getKey(), 1, "text");
+          $setSelection(newSelection);
+        });
+      },
     }),
-    [focusAt, readSnapshot],
+    [focusAt, readSnapshot, editor],
   );
 
   const handleEditorChange = useCallback((editorState: EditorState) => {
