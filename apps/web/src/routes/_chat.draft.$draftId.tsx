@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import ChatView from "../components/ChatView";
 import { threadHasStarted } from "../components/ChatView.logic";
 import { useComposerDraftStore, DraftId } from "../composerDraftStore";
@@ -7,6 +7,8 @@ import { SidebarInset } from "../components/ui/sidebar";
 import { createThreadSelectorAcrossEnvironments } from "../storeSelectors";
 import { useStore } from "../store";
 import { buildThreadRouteParams } from "../threadRoutes";
+
+const noOp = () => {};
 
 function DraftChatThreadRouteView() {
   const navigate = useNavigate();
@@ -60,6 +62,8 @@ function DraftChatThreadRouteView() {
           environmentId={canonicalThreadRef.environmentId}
           threadId={canonicalThreadRef.threadId}
           routeKind="server"
+          fileTreeOpen={false}
+          onToggleFileTree={noOp}
         />
       </SidebarInset>
     );
@@ -76,6 +80,8 @@ function DraftChatThreadRouteView() {
         environmentId={draftSession.environmentId}
         threadId={draftSession.threadId}
         routeKind="draft"
+        fileTreeOpen={false}
+        onToggleFileTree={noOp}
       />
     </SidebarInset>
   );

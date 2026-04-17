@@ -321,6 +321,8 @@ type ChatViewProps =
       reserveTitleBarControlInset?: boolean;
       routeKind: "server";
       draftId?: never;
+      fileTreeOpen: boolean;
+      onToggleFileTree: () => void;
     }
   | {
       environmentId: EnvironmentId;
@@ -329,6 +331,8 @@ type ChatViewProps =
       reserveTitleBarControlInset?: boolean;
       routeKind: "draft";
       draftId: DraftId;
+      fileTreeOpen: boolean;
+      onToggleFileTree: () => void;
     };
 
 interface TerminalLaunchContext {
@@ -586,6 +590,8 @@ export default function ChatView(props: ChatViewProps) {
     routeKind,
     onDiffPanelOpen,
     reserveTitleBarControlInset = true,
+    fileTreeOpen,
+    onToggleFileTree,
   } = props;
   const draftId = routeKind === "draft" ? props.draftId : null;
   const routeThreadRef = useMemo(
@@ -3236,12 +3242,14 @@ export default function ChatView(props: ChatViewProps) {
           diffToggleShortcutLabel={diffPanelShortcutLabel}
           gitCwd={gitCwd}
           diffOpen={diffOpen}
+          fileTreeOpen={fileTreeOpen}
           onRunProjectScript={runProjectScript}
           onAddProjectScript={saveProjectScript}
           onUpdateProjectScript={updateProjectScript}
           onDeleteProjectScript={deleteProjectScript}
           onToggleTerminal={toggleTerminalVisibility}
           onToggleDiff={onToggleDiff}
+          onToggleFileTree={onToggleFileTree}
         />
       </header>
 
